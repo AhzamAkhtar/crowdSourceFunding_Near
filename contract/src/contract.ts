@@ -20,8 +20,12 @@ class HelloNear {
   }
 
   @view({})
-  get_account() : string {
-    return this.accountName + this.walletUsername + this.profileUrl
+  get_account() :any {
+    return{
+    accountName : this.accountName,
+    walletUsername :this.walletUsername,
+    profileUrl : this.profileUrl
+    }
   }
 
   @call({}) // This method changes the state, for which it cost gas
