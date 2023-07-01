@@ -1,11 +1,15 @@
 import "regenerator-runtime/runtime";
-import React from "react";
+import React, { useState } from "react";
 
 import "./assets/global.css";
-
+import { Contract } from "./near-interface";
 import { EducationalText, SignInPrompt, SignOutButton } from "./ui-components";
+import { async } from "regenerator-runtime";
+
+//import Setup from "./Setup";
 
 export default function App({ isSignedIn, contractId, wallet }) {
+  const contract = new Contract({ contractId: contractId, walletToUse: wallet })
   const [valueFromBlockchain, setValueFromBlockchain] = React.useState();
   const [nameFromBlockchain, setNameFromBlockchain] = React.useState();
   const [walletUsername, setwalletUsername] = React.useState();
@@ -14,7 +18,11 @@ export default function App({ isSignedIn, contractId, wallet }) {
   const [createAccount, setcreateAccount] = React.useState(false);
   const [uiPleaseWait, setUiPleaseWait] = React.useState(false);
 
-  const [output , setOutput] = React.useState("")
+  const [output, setOutput] = React.useState([]);
+
+  const [messages, setMesages] = useState([]);
+
+  const [amount , setAmount] = useState("")
 
   //Get blockchian state once on component load
   React.useEffect(() => {
@@ -24,8 +32,7 @@ export default function App({ isSignedIn, contractId, wallet }) {
       .finally(() => {
         setUiPleaseWait(false);
       });
-    }
-  , []);
+  }, []);
 
   React.useEffect(() => {
     getName()
@@ -34,8 +41,11 @@ export default function App({ isSignedIn, contractId, wallet }) {
       .finally(() => {
         setUiPleaseWait(false);
       });
-    }
-  , []);
+  }, []);
+
+  // React.useEffect(() => {
+  //   guestBook.getMessages().then(setMesages);
+  // }, []);
 
   /// If user not signed-in with wallet - show prompt
   if (!isSignedIn) {
@@ -125,9 +135,25 @@ export default function App({ isSignedIn, contractId, wallet }) {
       });
   }
 
+ async function donation(e) {
+    const {amount} = e.target.elements
+    try {
+      await contract.donate(amount.value)
+    } catch(e) {
+      alert(
+        'Something went wrong! ' +
+        'Maybe you need to sign out and back in? ' +
+        'Check your browser console for more info.'
+      )
+      throw e
+    }
+  }
+
   function getAccount() {
     return wallet.viewMethod({ method: "get_account", contractId });
   }
+
+
 
   return (
     <>
@@ -167,9 +193,10 @@ export default function App({ isSignedIn, contractId, wallet }) {
             <h1>Crate Your Account Now</h1>
 
             <h1>
-              The contract says: <span className="greeting">{output}</span>
+              The contract says:{" "}
+              <span className="greeting">{output.accountName}</span>
             </h1>
-            
+
             <form onSubmit={setupAccount} className="change">
               <label>Change greeting:</label>
               <div>
@@ -187,6 +214,28 @@ export default function App({ isSignedIn, contractId, wallet }) {
                   autoComplete="off"
                   defaultValue={profileUrl}
                   id="profileUrl"
+                />
+                <button>
+                  <span>Save</span>
+                  <div className="loader"></div>
+                </button>
+              </div>
+            </form>
+          </main>
+          <main className={uiPleaseWait ? "please-wait" : ""}>
+            <h1>add project now</h1>
+
+            <h1>
+              The contract says donate
+            </h1>
+            
+            <form onSubmit={donation} className="change">
+              <label>Change greeting:</label>
+              <div>
+                <input
+                  autoComplete="off"
+                  defaultValue={amount}
+                  id="amount"
                 />
                 <button>
                   <span>Save</span>
