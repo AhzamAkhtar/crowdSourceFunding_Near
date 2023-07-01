@@ -1,6 +1,0 @@
-DEFINE_NEAR_METHOD(get_account)
-DEFINE_NEAR_METHOD(get_greeting)
-DEFINE_NEAR_METHOD(get_name)
-DEFINE_NEAR_METHOD(set_account)
-DEFINE_NEAR_METHOD(set_greeting)
-DEFINE_NEAR_METHOD(set_name)
