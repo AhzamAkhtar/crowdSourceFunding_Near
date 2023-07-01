@@ -17,17 +17,37 @@ export default function App({ isSignedIn, contractId, wallet }) {
   const [profileUrl, setprofileUrl] = React.useState();
   const [createAccount, setcreateAccount] = React.useState(false);
   const [uiPleaseWait, setUiPleaseWait] = React.useState(false);
+  const [listProjectUI, setListProjectUI] = useState(false)
+  const [showProjects, setShowProjects] = useState(false)
+  const [donateNow, setDonateNow] = useState(false)
+
+  //for listing project
+  const [projectName, setProjectName] = useState()
+  const [projectDescription, setprojectDescription] = useState()
+  const [projectLogo, setprojectLogo] = useState()
+  const [projectLinks, setprojectLinks] = useState()
+
 
   const [output, setOutput] = React.useState([]);
+  const [outputProj, setOutputProj] = useState([])
 
   const [messages, setMesages] = useState([]);
 
-  const [amount , setAmount] = useState("")
+  const [amount, setAmount] = useState("")
 
   //Get blockchian state once on component load
   React.useEffect(() => {
     getAccount()
       .then(setOutput)
+      .catch(alert)
+      .finally(() => {
+        setUiPleaseWait(false);
+      });
+  }, []);
+
+  React.useEffect(() => {
+    getProjects()
+      .then(setOutputProj)
       .catch(alert)
       .finally(() => {
         setUiPleaseWait(false);
@@ -42,10 +62,6 @@ export default function App({ isSignedIn, contractId, wallet }) {
         setUiPleaseWait(false);
       });
   }, []);
-
-  // React.useEffect(() => {
-  //   guestBook.getMessages().then(setMesages);
-  // }, []);
 
   /// If user not signed-in with wallet - show prompt
   if (!isSignedIn) {
@@ -135,11 +151,39 @@ export default function App({ isSignedIn, contractId, wallet }) {
       });
   }
 
- async function donation(e) {
-    const {amount} = e.target.elements
+  function listProject(e) {
+    e.preventDefault()
+    setUiPleaseWait(true)
+    const { projectName } = e.target.elements
+    const { projectDescription } = e.target.elements
+    const { projectLogo } = e.target.elements
+    const { projectLinks } = e.target.elements
+
+    wallet
+      .callMethod({
+        method: "publish_project",
+        args: {
+          projectName: projectName.value,
+          projectDescription: projectDescription.value,
+          projectLogo: projectLogo.value,
+          projectLinks: projectLinks.value,
+        },
+        contractId
+      })
+      .then(async () => {
+        return getProjects()
+      })
+      .then(setProjectName, setprojectDescription, setprojectLogo, setprojectLinks)
+      .finally(() => {
+        setUiPleaseWait(false)
+      })
+  }
+
+  async function donation(e) {
+    const { amount } = e.target.elements
     try {
       await contract.donate(amount.value)
-    } catch(e) {
+    } catch (e) {
       alert(
         'Something went wrong! ' +
         'Maybe you need to sign out and back in? ' +
@@ -154,106 +198,161 @@ export default function App({ isSignedIn, contractId, wallet }) {
   }
 
 
+  function getProjects() {
+    return wallet.viewMethod({ method: "get_projects", contractId });
+  }
+
 
   return (
     <>
-      <SignOutButton
-        accountId={wallet.accountId}
-        onClick={() => wallet.signOut()}
-      />
-      <main className={uiPleaseWait ? "please-wait" : ""}>
+      <div class="p-3 mb-2 bg-white text-dark">
+        <SignOutButton
+          accountId={wallet.accountId}
+          onClick={() => wallet.signOut()}
+        />
+
         <h1>
-          The contract says:{" "}
-          <span className="greeting">{valueFromBlockchain}</span>
+          Welcome Back  -
+          <span className="greeting">{output.accountName}</span>
+          {/* <span className="greeting">{outputProj.projectName}</span> */}
         </h1>
-        <h1>
-          The contract says:{" "}
-          <span className="greeting">{nameFromBlockchain}</span>
-        </h1>
-        <form onSubmit={changeName} className="change">
-          <label>Change greeting:</label>
-          <div>
-            <input
-              autoComplete="off"
-              defaultValue={nameFromBlockchain}
-              id="nameInput"
-            />
-            <button>
-              <span>Save</span>
-              <div className="loader"></div>
-            </button>
-          </div>
-        </form>
-      </main>
-      <h1>--------------------------</h1>
-      {createAccount ? (
-        <>
-          <h1>ddd</h1>
-          <main className={uiPleaseWait ? "please-wait" : ""}>
-            <h1>Crate Your Account Now</h1>
+        <div class="btn-group" role="group" aria-label="Basic example">
+          <button onClick={() => setListProjectUI(true)} type="button" class="btn btn-primary">List Your Project Now</button>
 
-            <h1>
-              The contract says:{" "}
-              <span className="greeting">{output.accountName}</span>
-            </h1>
+          <button onClick={() => setShowProjects(true)} type="button" class="btn btn-primary">Show Projects</button>
+        </div>
+        <main className={uiPleaseWait ? "please-wait" : ""}>
+          <h1>
+            Welcome  to Crowd Source Funding Dapp Powered by Near Blockchain
+            <span className="greeting"></span>
+          </h1>
+          <h1>
+            Create your Account to List Your Projectsand Recieve Public Funding and Give Donations
+            <span className="greeting"></span>
+          </h1>
+        </main>
 
-            <form onSubmit={setupAccount} className="change">
-              <label>Change greeting:</label>
-              <div>
-                <input
-                  autoComplete="off"
-                  defaultValue={accountName}
-                  id="accountName"
-                />
-                <input
-                  autoComplete="off"
-                  defaultValue={walletUsername}
-                  id="walletUsername"
-                />
-                <input
-                  autoComplete="off"
-                  defaultValue={profileUrl}
-                  id="profileUrl"
-                />
-                <button>
-                  <span>Save</span>
-                  <div className="loader"></div>
-                </button>
+        {createAccount ? (
+          <>
+            <main className={uiPleaseWait ? "please-wait" : ""}>
+              <h1>Crate Your Account Now</h1>
+              <form onSubmit={setupAccount}>
+                <div class="mb-3">
+                  <label for="exampleInputEmail1" class="form-label">Account Name</label>
+                  <input class="form-control" defaultValue={accountName}
+                    id="accountName" />
+
+                </div>
+                <div class="mb-3">
+                  <label for="exampleInputPassword1" class="form-label">Wallet UserName</label>
+                  <input class="form-control" defaultValue={walletUsername}
+                    id="walletUsername" />
+                </div>
+
+                <div class="mb-3">
+                  <label for="exampleInputPassword1" class="form-label">ProfileUrl</label>
+                  <input class="form-control" defaultValue={profileUrl}
+                    id="profileUrl" />
+                </div>
+
+                <button type="submit" class="btn btn-primary">Submit</button>
+              </form>
+              {/* //crate accounr  form */}
+            </main>
+            {/* <main className={uiPleaseWait ? "please-wait" : ""}>
+              <h1>add project now</h1>
+
+              <h1>
+                The contract says donate
+              </h1>
+
+              <form onSubmit={donation} className="change">
+                <label>Change greeting:</label>
+                <div>
+                  <input
+                    autoComplete="off"
+                    defaultValue={amount}
+                    id="amount"
+                  />
+                  <button>
+                    <span>Save</span>
+                    <div className="loader"></div>
+                  </button>
+                </div>
+              </form>
+            </main> */}
+          </>
+        ) : (
+          <>
+            <div>
+              <button type="button" class="btn btn-danger flex justify-center" onClick={() => setcreateAccount(true)}>
+                Create Account
+              </button>
+            </div>
+          </>
+        )}
+
+        {listProjectUI ? (
+          <>
+            <form onSubmit={listProject}>
+              <div class="mb-3">
+                <label for="exampleInputEmail1" class="form-label">Name</label>
+                <input class="form-control" defaultValue={projectName}
+                  id="projectName" />
               </div>
-            </form>
-          </main>
-          <main className={uiPleaseWait ? "please-wait" : ""}>
-            <h1>add project now</h1>
-
-            <h1>
-              The contract says donate
-            </h1>
-            
-            <form onSubmit={donation} className="change">
-              <label>Change greeting:</label>
-              <div>
-                <input
-                  autoComplete="off"
-                  defaultValue={amount}
-                  id="amount"
-                />
-                <button>
-                  <span>Save</span>
-                  <div className="loader"></div>
-                </button>
+              <div class="mb-3">
+                <label for="exampleInputEmail1" class="form-label">Description</label>
+                <input class="form-control" defaultValue={projectDescription}
+                  id="projectDescription" />
               </div>
-            </form>
-          </main>
-        </>
-      ) : (
-        <>
-          <div>
-            <button onClick={() => setcreateAccount(true)}>
-              Create Account
-            </button>
-          </div>
-        </>
-      )}
+              <div class="mb-3">
+                <label for="exampleInputEmail1" class="form-label">Logo</label>
+                <input class="form-control" defaultValue={projectLogo}
+                  id="projectLogo" />
+              </div>
+              <div class="mb-3">
+                <label for="exampleInputEmail1" class="form-label">Links</label>
+                <input class="form-control" defaultValue={projectLinks}
+                  id="projectLinks" />
+              </div>
+
+              <button type="submit" class="btn btn-primary">Submit</button>
+            </form></>
+        ) : (
+          <></>
+        )}
+
+        {showProjects ? (
+          <>
+            <h1>{""}</h1>
+            <div class="card">
+              <img src={outputProj.projectLogo} class="card-img-top" alt="..." />
+              <div class="card-body">
+                <h5 class="card-title">{outputProj.projectName}</h5>
+                <p class="card-text">{outputProj.projectDescription}</p>
+                <a href={outputProj.projectLinks} class="btn btn-primary">Checkout More</a>
+                <button onClick={() => setDonateNow(true)} type="button" class="btn btn-primary">Donate</button>
+                {donateNow ? (
+                  <>
+                    <form onSubmit={donation}>
+                      <div class="mb-3">
+                        <label for="exampleInputEmail1" class="form-label">Amount</label>
+                        <input defaultValue={amount}
+                          id="amount" class="form-control" />
+                      </div>
+                      <button type="submit" class="btn btn-primary">Send</button>
+                    </form>
+                  </>
+                ) : (
+                  <></>
+                )}
+              </div>
+            </div>
+          </>
+        ) : (
+          <></>
+        )}
+      </div>
     </>
   );
 }
