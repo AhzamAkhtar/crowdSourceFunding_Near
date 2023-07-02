@@ -12,6 +12,7 @@ class DonationContract {
   accountName: string = "username";
   walletUsername: string = "test_wallet";
   profileUrl: string = "gg";
+  donationAmount : number = 0;
 
   // for add projects
   projectName: string = "sampleName";
@@ -93,7 +94,16 @@ class DonationContract {
     this.projectLogo = projectLogo;
     this.projectLinks = projectLinks;
   }
- 
+
+  @call({})
+  increase_donation({amount} : {amount : number}) : void {
+    this.donationAmount = this.donationAmount + amount
+  }
+
+  @view({})
+  get_donationamount() : number {
+    return this.donationAmount
+  }
 
   @initialize({ privateFunction: true })
   init({ beneficiary }: { beneficiary: string }) {
@@ -159,4 +169,6 @@ class DonationContract {
       total_amount: this.donations.get(account_id).toString()
     }
   }
+
+ 
 }

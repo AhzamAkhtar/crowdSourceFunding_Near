@@ -1,7 +1,7 @@
 import "regenerator-runtime/runtime";
 import React, { useState } from "react";
 
-import "./assets/global.css";
+//import "./assets/global.css";
 import { Contract } from "./near-interface";
 import { EducationalText, SignInPrompt, SignOutButton } from "./ui-components";
 import { async } from "regenerator-runtime";
@@ -26,6 +26,9 @@ export default function App({ isSignedIn, contractId, wallet }) {
   const [projectDescription, setprojectDescription] = useState()
   const [projectLogo, setprojectLogo] = useState()
   const [projectLinks, setprojectLinks] = useState()
+
+  //for getting the donation amount
+  const [donationAmount, setDinationAmount] = useState()
 
 
   const [output, setOutput] = React.useState([]);
@@ -62,6 +65,16 @@ export default function App({ isSignedIn, contractId, wallet }) {
         setUiPleaseWait(false);
       });
   }, []);
+
+  // React.useEffect(() => {
+  //   getDonationAmount()
+  //     .then(setDinationAmount)
+  //     .catch(alert)
+  //     .finally(() => {
+  //       setUiPleaseWait(false);
+  //     });
+  // }, []);
+
 
   /// If user not signed-in with wallet - show prompt
   if (!isSignedIn) {
@@ -179,10 +192,29 @@ export default function App({ isSignedIn, contractId, wallet }) {
       })
   }
 
+  function getDonation(amount) {
+    wallet
+      .callMethod({
+        method: "increase_donation",
+        args: {
+          donationAmount: amount
+        },
+        contractId
+      })
+      .then(async () => {
+        return getDonationAmount()
+      })
+      .then(setDinationAmount)
+      .finally(() => {
+        setUiPleaseWait(false)
+      })
+  }
+
   async function donation(e) {
     const { amount } = e.target.elements
     try {
       await contract.donate(amount.value)
+      //getDonation(amount.value)
     } catch (e) {
       alert(
         'Something went wrong! ' +
@@ -202,6 +234,10 @@ export default function App({ isSignedIn, contractId, wallet }) {
     return wallet.viewMethod({ method: "get_projects", contractId });
   }
 
+  function getDonationAmount() {
+    return wallet.viewMethod({ method: "get_donationamount", contractId })
+  }
+
 
   return (
     <>
@@ -211,31 +247,36 @@ export default function App({ isSignedIn, contractId, wallet }) {
           onClick={() => wallet.signOut()}
         />
 
-        <h1>
+        <h4 class="p-2">
           Welcome Back  -
           <span className="greeting">{output.accountName}</span>
+          {/* <span className="greeting">{donationAmount}</span> */}
           {/* <span className="greeting">{outputProj.projectName}</span> */}
-        </h1>
-        <div class="btn-group" role="group" aria-label="Basic example">
+        </h4>
+        <div class="btn-group grid gap-3 p-2" role="group" aria-label="Basic example">
           <button onClick={() => setListProjectUI(true)} type="button" class="btn btn-primary">List Your Project Now</button>
 
-          <button onClick={() => setShowProjects(true)} type="button" class="btn btn-primary">Show Projects</button>
+          <button onClick={() => setShowProjects(true)} type="button" class="btn btn-primary ">Show Projects</button>
         </div>
         <main className={uiPleaseWait ? "please-wait" : ""}>
-          <h1>
-            Welcome  to Crowd Source Funding Dapp Powered by Near Blockchain
+          <h1 class="p-3">
+            Welcome to NEAR CROWD
             <span className="greeting"></span>
           </h1>
-          <h1>
-            Create your Account to List Your Projectsand Recieve Public Funding and Give Donations
+          <h2 class="p-2">
+            A Crowd Funding Dapp Powered by Near Blockchains
             <span className="greeting"></span>
-          </h1>
+          </h2>
+          <h4 class="p-3">
+            Create your Account to List Your Projects to Recieve Public Funding and Give Donations
+            <span className="greeting"></span>
+          </h4>
         </main>
 
         {createAccount ? (
           <>
             <main className={uiPleaseWait ? "please-wait" : ""}>
-              <h1>Crate Your Account Now</h1>
+              <h3>Crate Your Account Now</h3>
               <form onSubmit={setupAccount}>
                 <div class="mb-3">
                   <label for="exampleInputEmail1" class="form-label">Account Name</label>
@@ -284,16 +325,18 @@ export default function App({ isSignedIn, contractId, wallet }) {
           </>
         ) : (
           <>
-            <div>
-              <button type="button" class="btn btn-danger flex justify-center" onClick={() => setcreateAccount(true)}>
-                Create Account
+            <div class="h-100 d-flex align-items-center justify-content-center">
+            <button type="button" class="btn btn-danger flex justify-center" onClick={() => setcreateAccount(true)}>
+                Create  Your Account
               </button>
             </div>
+        
           </>
         )}
 
         {listProjectUI ? (
           <>
+            <h3 class="p-2">List Your Project Now </h3>
             <form onSubmit={listProject}>
               <div class="mb-3">
                 <label for="exampleInputEmail1" class="form-label">Name</label>
@@ -330,8 +373,10 @@ export default function App({ isSignedIn, contractId, wallet }) {
               <div class="card-body">
                 <h5 class="card-title">{outputProj.projectName}</h5>
                 <p class="card-text">{outputProj.projectDescription}</p>
-                <a href={outputProj.projectLinks} class="btn btn-primary">Checkout More</a>
-                <button onClick={() => setDonateNow(true)} type="button" class="btn btn-primary">Donate</button>
+                <div class="btn-group grid gap-3 p-2" role="group" aria-label="Basic example">
+                <a href={outputProj.projectLinks} class="btn btn-primary p-2">Checkout More</a>
+                <button onClick={() => setDonateNow(true)} type="button" class="btn btn-primary p-2">Donate</button>
+                </div>
                 {donateNow ? (
                   <>
                     <form onSubmit={donation}>
