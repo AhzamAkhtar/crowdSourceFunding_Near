@@ -3,22 +3,13 @@ import React from 'react';
 export function SignInPrompt({greeting, onClick}) {
   return (
     <main>
-      <h1>
-        The contract says: <span className="greeting">{greeting}</span>
-      </h1>
-      <h3>
-        Welcome to NEAR!
+      <h3 class="p-4 text-center fw-bold">
+        Welcome to NEAR CROWD!
       </h3>
-      <p>
-        Your contract is storing a greeting message in the NEAR blockchain. To
-        change it you need to sign in using the NEAR Wallet. It is very simple,
-        just use the button below.
+      <p class="fw-medium">
+      Near Crowd is a blockchain-based crowdfunding platform designed to support and empower creators, artists, and entrepreneurs. By harnessing the near blockchain's scalability and low transaction fees, Near Crowd enables individuals from all over the world to showcase their projects and receive funding from a global community of supporters. With its user-friendly interface and integrated smart contracts, Near Crowd ensures that funds are securely managed and distributed to project creators upon successful completion.
       </p>
-      <p>
-        Do not worry, this app runs in the test network ("testnet"). It works
-        just like the main network ("mainnet"), but using NEAR Tokens that are
-        only for testing!
-      </p>
+     
       <br/>
       <p style={{ textAlign: 'center' }}>
         <button onClick={onClick}>Sign in with NEAR Wallet</button>

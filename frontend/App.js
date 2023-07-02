@@ -250,7 +250,7 @@ export default function App({ isSignedIn, contractId, wallet }) {
         <h4 class="p-2">
           Welcome Back  -
           <span className="greeting">{output.accountName}</span>
-          {/* <span className="greeting">{donationAmount}</span> */}
+          {/* <span className="greeting">ff : {donationAmount}</span> */}
           {/* <span className="greeting">{outputProj.projectName}</span> */}
         </h4>
         <div class="btn-group grid gap-3 p-2" role="group" aria-label="Basic example">
@@ -327,7 +327,7 @@ export default function App({ isSignedIn, contractId, wallet }) {
           <>
             <div class="h-100 d-flex align-items-center justify-content-center">
             <button type="button" class="btn btn-danger flex justify-center" onClick={() => setcreateAccount(true)}>
-                Create  Your Account
+                Create or Edit Your Account
               </button>
             </div>
         
@@ -369,7 +369,7 @@ export default function App({ isSignedIn, contractId, wallet }) {
           <>
             <h1>{""}</h1>
             <div class="card">
-              <img src={outputProj.projectLogo} class="card-img-top" alt="..." />
+              <img src={outputProj.projectLogo} class="rounded mx-auto d-block" alt="..." />
               <div class="card-body">
                 <h5 class="card-title">{outputProj.projectName}</h5>
                 <p class="card-text">{outputProj.projectDescription}</p>
